@@ -6,7 +6,7 @@ Um sistema de gestão financeira pessoal de **alta segurança** e **extrema pers
 ![Security](https://img.shields.io/badge/security-Atomic%20Cryptography%20%2B%20AES--256--GCM%20%2B%20HMAC-red)
 ![Frontend](https://img.shields.io/badge/frontend-Vanilla%20JS%20%2B%20CSS-green)
 ![Backend](https://img.shields.io/badge/backend-FastAPI%20%2B%20SQLite-lightgrey)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 ---
 
 ## 🔐 Segurança Nível "Atomic Fortress" (Arquitetura Inviolável)
