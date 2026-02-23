@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Antigravity Finance{% endblock %}
+
+{% block content %}
+<!-- Auth Layer -->
+<div id="auth-screen" class="overlay">
+    <div class="lock-container">
+        <div class="lock-brand">
+            <i class="fas fa-user-lock"></i>
+            <h1 id="auth-title">Bem-vindo</h1>
+            <p id="auth-subtitle">Entre na sua conta segura</p>
+        </div>
+
+        <div class="auth-forms">
+            <div class="form-group">
+                <input type="text" id="auth-username" placeholder="Usuário">
+            </div>
+            <div class="form-group">
+                <input type="password" id="auth-password" placeholder="Senha">
+            </div>
+
+            <button class="btn-primary" style="width:100%; margin-bottom: 1rem;" onclick="handleAuth()"
+                id="auth-btn">Entrar</button>
+            <button class="text-btn" onclick="toggleAuthMode()" id="auth-toggle">Não tem conta? Crie agora</button>
+        </div>
+
+        <p class="crypto-note" style="margin-top: 2rem;"><i class="fas fa-shield-alt"></i> Sua sessão é protegida por
+            JWT.</p>
+    </div>
+</div>
+
+<!-- Main App Layout -->
+<div id="app" class="hidden">
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-rocket"></i>
+                <span>Antigravity</span>
+            </div>
+        </div>
+
+        {% include "partials/navbar.html" %}
+
+        <div class="sidebar-footer">
+            <div class="quote-card">
+                <p id="motivational-quote">"O controle financeiro é o primeiro passo para a liberdade."</p>
+            </div>
+            <button class="text-btn" onclick="logout()" style="margin-top: 1rem; width: 100%; color: var(--danger);">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </aside>
+
+    <main id="main-content">
+        <header>
+            <div class="welcome">
+                <h2>Olá, <span class="username">Visitante</span> 👋</h2>
+                <p id="current-date"></p>
+            </div>
+            <div class="actions">
+                <button class="btn-primary" onclick="openModal('add-transaction')"><i class="fas fa-plus"></i> Novo
+                    Registro</button>
+            </div>
+        </header>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="content-section">
+            <div class="stats-grid">
+                <div class="stat-card balance">
+                    <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-info">
+                        <h3>Saldo Total</h3>
+                        <p class="value" id="total-balance">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="stat-card income">
+                    <div class="stat-icon"><i class="fas fa-arrow-up"></i></div>
+                    <div class="stat-info">
+                        <h3>Ganhos</h3>
+                        <p class="value" id="total-income">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="stat-card expenses">
+                    <div class="stat-icon"><i class="fas fa-arrow-down"></i></div>
+                    <div class="stat-info">
+                        <h3>Despesas</h3>
+                        <p class="value" id="total-expenses">R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-secondary">
+                <div class="recent-activity card">
+                    <div class="card-header">
+                        <h3>Atividade Recente</h3>
+                        <button class="text-btn" onclick="showSection('transactions')">Ver tudo</button>
+                    </div>
+                    <div class="transaction-list" id="recent-transactions">
+                        <p class="empty-state">Nenhuma transação carregada.</p>
+                    </div>
+                </div>
+                <div class="caixinhas-preview card">
+                    <div class="card-header">
+                        <h3>Minhas Caixinhas</h3>
+                        <button class="text-btn" onclick="showSection('caixinhas')">Ver todas</button>
+                    </div>
+                    <div class="caixinhas-grid-mini" id="caixinhas-mini-list">
+                        <p class="empty-state">Sem reservas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transactions Section -->
+        <section id="transactions" class="content-section hidden">
+            <div class="section-header" style="margin-bottom: 2rem;">
+                <h2>Histórico de Transações</h2>
+            </div>
+            <div class="card">
+                <div class="transaction-list" id="full-transaction-list"></div>
+            </div>
+        </section>
+
+        <!-- Caixinhas Section -->
+        <section id="caixinhas" class="content-section hidden">
+            <div class="section-header"
+                style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>Minhas Caixinhas</h2>
+                <button class="btn-primary" onclick="openModal('add-caixinha')"><i class="fas fa-plus"></i> Criar
+                    Caixinha</button>
+            </div>
+            <div class="caixinhas-grid" id="full-caixinhas-list"></div>
+        </section>
+
+        {% include "partials/settings.html" %}
+
+        <!-- Tips Section -->
+        <section id="tips" class="content-section hidden">
+            <div class="tips-container">
+                <h2 style="margin-bottom: 2rem;">Dicas Financeiras 💡</h2>
+                <div class="tips-grid" id="tips-grid-content"></div>
+            </div>
+        </section>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+<section id="settings" class="content-section hidden">
+    <div class="settings-layout">
+        <div class="section-header">
+            <h2>Preferências do Sistema ⚙️</h2>
+            <p>Personalize sua experiência segura</p>
+        </div>
+
+        <div class="settings-grid">
+            <!-- Visual Settings -->
+            <div class="card settings-card">
+                <div class="card-header"><i class="fas fa-paint-brush"></i>
+                    <h3>Aparência</h3>
+                </div>
+                <div class="form-group">
+                    <label>Cor Principal</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="set-color" value="#6366f1" onchange="applySettings()">
+                        <span>Destaque Visual</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tamanho da Fonte</label>
+                    <select id="set-font" onchange="applySettings()">
+                        <option value="14px">Pequeno</option>
+                        <option value="16px" selected>Médio</option>
+                        <option value="18px">Grande</option>
+                        <option value="20px">Extra Grande</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estilo da Fonte</label>
+                    <select id="set-font-family" onchange="applySettings()">
+                        <option value="'Outfit', sans-serif">Moderno (Outfit)</option>
+                        <option value="'Roboto', sans-serif">Limpo (Roboto)</option>
+                        <option value="'Montserrat', sans-serif">Geométrico (Montserrat)</option>
+                        <option value="'Playfair Display', serif">Clássico (Playfair)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Posição da Barra Lateral (LDR/RDL)</label>
+                    <select id="set-nav-pos" onchange="applySettings()">
+                        <option value="row">Esquerda (LDR)</option>
+                        <option value="row-reverse">Direita (RDL)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Regional Settings -->
+            <div class="card settings-card">
+                <div class="card-header"><i class="fas fa-globe"></i>
+                    <h3>Regional</h3>
+                </div>
+                <div class="form-group">
+                    <label>Idioma do Sistema</label>
+                    <select id="set-lang" onchange="applySettings()">
+                        <option value="pt-BR">Português (Brasil)</option>
+                        <option value="en-US">English (USA)</option>
+                        <option value="es-ES">Español (España)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Moeda de Exibição</label>
+                    <select id="set-currency" onchange="applySettings()">
+                        <option value="BRL">Real (R$)</option>
+                        <option value="USD">Dólar ($)</option>
+                        <option value="EUR">Euro (€)</option>
+                        <option value="GBP">Libra (£)</option>
+                        <option value="JPY">Iene (¥)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-actions">
+            <button class="btn-primary btn-large" onclick="saveSettingsToServer()">
+                <i class="fas fa-cloud-upload-alt"></i> Sincronizar com o Vault
+            </button>
+            <p id="settings-status"></p>
+        </div>
+    </div>
+</section>
