@@ -84,6 +84,6 @@ python main.py
 ---
 
 ## 📄 Licença
-Este projeto é de uso privado e focado em segurança máxima. 
+Este projeto é de uso público e focado em segurança máxima. 
 
-**Antigravity Finance - Controle absoluto, segurança absurda.**
+**Financeiro- Controle absoluto, segurança absurda.**
