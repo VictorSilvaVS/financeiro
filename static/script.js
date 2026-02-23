@@ -411,9 +411,12 @@ function translateUI() {
         navLinks[0].innerHTML = `<i class="fas fa-chart-line"></i> ${t.dashboard}`;
         navLinks[1].innerHTML = `<i class="fas fa-exchange-alt"></i> ${t.transactions}`;
         navLinks[2].innerHTML = `<i class="fas fa-piggy-bank"></i> ${t.caixinhas}`;
-        navLinks[3].innerHTML = `<i class="fas fa-lightbulb"></i> ${t.tips}`;
+        navLinks[3].innerHTML = `<i class="fas fa-lightbulb"></i> ${t.tipsLink}`;
         navLinks[4].innerHTML = `<i class="fas fa-cog"></i> ${t.settings}`;
     }
+
+    const logoutBtn = document.querySelector('.sidebar-footer .text-btn');
+    if (logoutBtn) logoutBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> ${t.logout}`;
 
     // Dashboard Titles
     const h3s = document.querySelectorAll('.stat-info h3');
@@ -425,18 +428,19 @@ function translateUI() {
 
     // Card Headers
     document.querySelectorAll('.card-header h3').forEach(h => {
-        if (h.innerText.includes("Atividade") || h.innerText.includes("Activity")) h.textContent = t.recentActivities;
-        if (h.innerText.includes("Caixinhas") || h.innerText.includes("Vaults")) h.textContent = t.myCaixinhas;
+        if (h.innerText.includes("Atividade") || h.innerText.includes("Activity") || h.innerText.includes("Actividad")) h.textContent = t.recentActivities;
+        if (h.innerText.includes("Caixinhas") || h.innerText.includes("Vaults") || h.innerText.includes("Ahorros")) h.textContent = t.myCaixinhas;
     });
 
     // Settings Labels
     const labels = document.querySelectorAll('.settings-card label');
-    if (labels.length >= 5) {
+    if (labels.length >= 6) {
         labels[0].textContent = t.colorLabel;
         labels[1].textContent = t.fontLabel;
-        labels[2].textContent = t.navLabel;
-        labels[3].textContent = t.langLabel;
-        labels[4].textContent = t.currLabel;
+        labels[2].textContent = t.fontStyleLabel;
+        labels[3].textContent = t.navLabel;
+        labels[4].textContent = t.langLabel;
+        labels[5].textContent = t.currLabel;
     }
 
     const saveBtn = document.querySelector('.settings-actions button');
@@ -444,6 +448,9 @@ function translateUI() {
 
     const newRecBtn = document.querySelector('header .btn-primary');
     if (newRecBtn) newRecBtn.innerHTML = `<i class="fas fa-plus"></i> ${t.newRecord}`;
+
+    setRandomQuote();
+    renderTips();
 }
 
 async function saveSettingsToServer() {
@@ -493,7 +500,8 @@ function updateDate() {
 }
 
 function setRandomQuote() {
-    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+    const t = translations[globalSettings.language] || translations["pt-BR"];
+    const quote = t.quotes[Math.floor(Math.random() * t.quotes.length)];
     const el = document.getElementById('motivational-quote');
     if (el) el.textContent = `"${quote}"`;
 }
@@ -501,7 +509,8 @@ function setRandomQuote() {
 function renderTips() {
     const container = document.getElementById('tips-grid-content');
     if (!container) return;
-    container.innerHTML = financialTips.map(tip => `
+    const t = translations[globalSettings.language] || translations["pt-BR"];
+    container.innerHTML = t.financialTips.map(tip => `
         <div class="tip-card">
             <i class="fas ${tip.icon}"></i>
             <h3>${tip.title}</h3>
