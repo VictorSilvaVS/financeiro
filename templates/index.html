@@ -20,9 +20,8 @@
                 <input type="password" id="auth-password" placeholder="Senha">
             </div>
 
-            <button class="btn-primary" style="width:100%; margin-bottom: 1rem;" onclick="handleAuth()"
-                id="auth-btn">Entrar</button>
-            <button class="text-btn" onclick="toggleAuthMode()" id="auth-toggle">Não tem conta? Crie agora</button>
+            <button class="btn-primary" style="width:100%; margin-bottom: 1rem;" id="auth-btn">Entrar</button>
+            <button class="text-btn" id="auth-toggle">Não tem conta? Crie agora</button>
         </div>
 
         <p class="crypto-note" style="margin-top: 2rem;"><i class="fas fa-shield-alt"></i> Sua sessão é protegida por
@@ -38,15 +37,25 @@
                 <i class="fas fa-rocket"></i>
                 <span>Antigravity</span>
             </div>
+            <button id="menu-toggle" class="menu-btn mobile-only">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
 
         {% include "partials/navbar.html" %}
+
+        <div class="mobile-only sidebar-footer-mobile" style="padding: 1rem 2rem;">
+            <button id="logout-btn-mobile" class="text-btn"
+                style="width: 100%; color: var(--danger); text-align: center;">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
 
         <div class="sidebar-footer">
             <div class="quote-card">
                 <p id="motivational-quote">"O controle financeiro é o primeiro passo para a liberdade."</p>
             </div>
-            <button class="text-btn" onclick="logout()" style="margin-top: 1rem; width: 100%; color: var(--danger);">
+            <button id="logout-btn" class="text-btn" style="margin-top: 1rem; width: 100%; color: var(--danger);">
                 <i class="fas fa-sign-out-alt"></i> Sair
             </button>
         </div>
@@ -59,7 +68,7 @@
                 <p id="current-date"></p>
             </div>
             <div class="actions">
-                <button class="btn-primary" onclick="openModal('add-transaction')"><i class="fas fa-plus"></i> Novo
+                <button id="btn-new-record" class="btn-primary"><i class="fas fa-plus"></i> Novo
                     Registro</button>
             </div>
         </header>
@@ -94,7 +103,7 @@
                 <div class="recent-activity card">
                     <div class="card-header">
                         <h3>Atividade Recente</h3>
-                        <button class="text-btn" onclick="showSection('transactions')">Ver tudo</button>
+                        <button class="text-btn nav-to-transactions">Ver tudo</button>
                     </div>
                     <div class="transaction-list" id="recent-transactions">
                         <p class="empty-state">Nenhuma transação carregada.</p>
@@ -103,7 +112,7 @@
                 <div class="caixinhas-preview card">
                     <div class="card-header">
                         <h3>Minhas Caixinhas</h3>
-                        <button class="text-btn" onclick="showSection('caixinhas')">Ver todas</button>
+                        <button class="text-btn nav-to-caixinhas">Ver todas</button>
                     </div>
                     <div class="caixinhas-grid-mini" id="caixinhas-mini-list">
                         <p class="empty-state">Sem reservas.</p>
@@ -127,7 +136,7 @@
             <div class="section-header"
                 style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2>Minhas Caixinhas</h2>
-                <button class="btn-primary" onclick="openModal('add-caixinha')"><i class="fas fa-plus"></i> Criar
+                <button id="btn-create-caixinha" class="btn-primary"><i class="fas fa-plus"></i> Criar
                     Caixinha</button>
             </div>
             <div class="caixinhas-grid" id="full-caixinhas-list"></div>
@@ -144,4 +153,52 @@
         </section>
     </main>
 </div>
+
+<!-- SECURE TEMPLATES -->
+<template id="tpl-transaction">
+    <div class="transaction-item">
+        <div class="t-main">
+            <div class="t-icon"><i class="fas"></i></div>
+            <div class="t-info">
+                <p class="t-desc-val"></p>
+                <span class="t-meta">
+                    <i class="fas fa-calendar-day"></i> <span class="t-date-val"></span>
+                    <span class="badge t-cat-badge"></span>
+                    <span class="badge badge-installment t-inst-badge"><i class="fas fa-layer-group"></i> <span
+                            class="t-inst-val"></span></span>
+                </span>
+            </div>
+        </div>
+        <div class="t-amount"></div>
+        <div class="t-actions">
+            <button class="delete-transaction-btn" title="Remover"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    </div>
+</template>
+
+<template id="tpl-caixinha">
+    <div class="caixinha-card">
+        <div class="card-header">
+            <h3 class="c-name-val"></h3>
+            <i class="fas fa-piggy-bank"></i>
+        </div>
+        <p><span class="c-curr-val"></span> / <span class="c-target-val"></span></p>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <span><span class="c-percent-val"></span>% alcançado</span>
+        </div>
+        <button class="btn-primary invest-btn" style="width:100%; margin-top:1rem">Investir</button>
+    </div>
+</template>
+
+<template id="tpl-caixinha-mini">
+    <div style="margin-bottom:1rem">
+        <small class="c-name-mini"></small>
+        <div class="progress-bar" style="height:6px">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+</template>
 {% endblock %}

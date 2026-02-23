@@ -1,25 +1,24 @@
-const API_URL = "";
-let token = localStorage.getItem('finance_token');
-let authMode = 'login';
-
+const API_URL = window.location.origin;
 let state = {
-    username: "",
-    balance: 0,
+    username: '',
+    transactions: [],
+    caixinhas: [],
     income: 0,
     expenses: 0,
-    transactions: [],
-    caixinhas: []
+    balance: 0
 };
 
 let globalSettings = {
-    theme: "dark",
-    primaryColor: "#6366f1",
-    fontSize: "16px",
-    currency: "BRL",
-    language: "pt-BR",
-    navPos: "row",
-    fontFamily: "'Outfit', sans-serif"
+    theme: 'dark',
+    primaryColor: '#6366f1',
+    fontSize: '16px',
+    fontFamily: "'Outfit', sans-serif",
+    navPos: 'row',
+    language: 'pt-BR',
+    currency: 'BRL'
 };
+
+let authMode = 'login';
 
 const translations = {
     "pt-BR": {
@@ -133,13 +132,102 @@ const translations = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (token) {
-        checkTokenAndLoad();
-    }
+    initEventListeners();
+    // Tokens are now in HttpOnly cookies. We check if we are logged in by trying to load data.
+    checkTokenAndLoad();
     updateDate();
     setRandomQuote();
     renderTips();
 });
+
+function initEventListeners() {
+    // Auth
+    document.getElementById('auth-btn')?.addEventListener('click', handleAuth);
+    document.getElementById('auth-toggle')?.addEventListener('click', toggleAuthMode);
+
+    // Logout
+    document.getElementById('logout-btn')?.addEventListener('click', logout);
+    document.getElementById('logout-btn-mobile')?.addEventListener('click', logout);
+
+    // Menu Toggle (Mobile)
+    const menuToggle = document.getElementById('menu-toggle');
+    const nav = document.querySelector('nav');
+
+    menuToggle?.addEventListener('click', () => {
+        nav?.classList.toggle('active');
+        const icon = menuToggle.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        }
+    });
+
+    // Close menu on navigation (Mobile)
+    document.querySelectorAll('nav a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const section = a.getAttribute('data-section');
+            if (section) {
+                showSection(section);
+                if (window.innerWidth <= 1024) {
+                    nav?.classList.remove('active');
+                    const icon = menuToggle?.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('fa-bars');
+                        icon.classList.remove('fa-times');
+                    }
+                }
+            }
+        });
+    });
+    // Dashboard navigation shortcuts and general click delegations
+    document.addEventListener('click', (e) => {
+        // Dashboard navigation shortcuts
+        if (e.target.classList.contains('nav-to-transactions')) showSection('transactions');
+        if (e.target.classList.contains('nav-to-caixinhas')) showSection('caixinhas');
+
+        // Modal Action Buttons (Delegation)
+        if (e.target.id === 'submit-t-btn') submitTransaction();
+        if (e.target.id === 'cancel-modal-btn' || e.target.classList.contains('close-modal-trigger')) closeModal();
+        if (e.target.id === 'submit-c-btn') submitCaixinha();
+        if (e.target.id === 'submit-d-btn') {
+            const id = e.target.getAttribute('data-id');
+            submitDeposit(id);
+        }
+
+        // Dynamic Caixinha Buttons
+        if (e.target.classList.contains('invest-btn')) {
+            const id = e.target.getAttribute('data-id');
+            openDepositModal(parseInt(id));
+        }
+
+        // Delete Transaction Button (Delegation)
+        if (e.target.closest('.t-actions .delete-transaction-btn')) {
+            const button = e.target.closest('.t-actions .delete-transaction-btn');
+            const transactionId = button.getAttribute('data-id');
+            if (transactionId) {
+                deleteTransaction(parseInt(transactionId));
+            }
+        }
+    });
+
+    // New Entity Buttons
+    document.getElementById('btn-new-record')?.addEventListener('click', () => openModal('add-transaction'));
+    document.getElementById('btn-create-caixinha')?.addEventListener('click', () => openModal('add-caixinha'));
+
+    // Settings
+    const settingInputs = ['set-color', 'set-font', 'set-font-family', 'set-nav-pos', 'set-lang', 'set-currency'];
+    settingInputs.forEach(id => {
+        document.getElementById(id)?.addEventListener('change', () => applySettings());
+    });
+    document.getElementById('save-settings-btn')?.addEventListener('click', saveSettingsToServer);
+
+    // Modal Dynamic Fields delegation
+    document.addEventListener('change', (e) => {
+        if (e.target.id === 't-type') toggleCategoryField();
+        if (e.target.id === 't-category') toggleInstallmentsField();
+    });
+}
 
 // Auth Logic
 function toggleAuthMode() {
@@ -162,6 +250,8 @@ async function handleAuth() {
     body.append('password', password);
 
     try {
+        // Note: For production, consider adding CSRF protection for POST requests.
+        // This setup relies on HttpOnly cookies for session management.
         const response = await fetch(`${API_URL}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -173,13 +263,8 @@ async function handleAuth() {
             throw new Error(err.detail || "Erro na autenticação");
         }
 
-        if (authMode === 'signup') {
-            alert("Conta criada! Agora faça login.");
-            toggleAuthMode();
-        } else {
-            const data = await response.json();
-            token = data.access_token;
-            localStorage.setItem('finance_token', token);
+        if (response.ok) {
+            // Backend sets HttpOnly cookie for both /token and /signup
             await checkTokenAndLoad();
         }
     } catch (err) {
@@ -189,14 +274,17 @@ async function handleAuth() {
 
 async function checkTokenAndLoad() {
     try {
-        // Fetch Data
-        const resData = await fetch(`${API_URL}/api/data`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        // Fetch Data - Credentials (HttpOnly Cookies) are sent automatically
+        const resData = await fetch(`${API_URL}/api/data`);
 
         if (!resData.ok) {
-            logout();
-            return;
+            if (resData.status === 401) {
+                // Not logged in or session expired
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('app').classList.add('hidden');
+                return;
+            }
+            throw new Error("Erro ao carregar dados do Vault");
         }
 
         const data = await resData.json();
@@ -205,9 +293,7 @@ async function checkTokenAndLoad() {
         state.caixinhas = data.caixinhas;
 
         // Fetch Settings
-        const resSettings = await fetch(`${API_URL}/api/settings`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const resSettings = await fetch(`${API_URL}/api/settings`);
         if (resSettings.ok) {
             globalSettings = await resSettings.json();
             applySettings(false); // Apply without saving back to server
@@ -220,12 +306,12 @@ async function checkTokenAndLoad() {
         updateUI();
     } catch (err) {
         console.error(err);
-        logout();
     }
 }
 
-function logout() {
-    localStorage.removeItem('finance_token');
+async function logout() {
+    // Backend clears the HttpOnly cookie.
+    await fetch(`${API_URL}/logout`, { method: 'POST' });
     location.reload();
 }
 
@@ -245,36 +331,54 @@ function updateUI() {
         const target = document.getElementById(targetId);
         if (!target) return;
 
-        if (list.length === 0) {
-            target.innerHTML = `<p class="empty-state">Nenhuma transação registrada.</p>`;
-        } else {
-            target.innerHTML = list.slice().reverse().map(t => {
-                const badgeClass = t.category === 'fixed' ? 'badge-fixed' : 'badge-variable';
-                const categoryLabel = t.category === 'fixed' ? 'Fixa' : 'Variável';
-                const installmentLabel = t.installments > 1 ? `<span class="badge badge-installment"><i class="fas fa-layer-group"></i> ${t.current_installment}/${t.installments}</span>` : '';
+        target.innerHTML = ''; // Limpa o container
 
-                return `
-                    <div class="transaction-item">
-                        <div class="t-main">
-                            <div class="t-icon ${t.type}"><i class="fas ${t.type === 'income' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i></div>
-                            <div class="t-info">
-                                <p>${t.description}</p>
-                                <span>
-                                    <i class="fas fa-calendar-day"></i> ${t.date}
-                                    ${t.type === 'expense' ? `<span class="badge ${badgeClass}">${categoryLabel}</span>` : ''}
-                                    ${installmentLabel}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="t-amount ${t.type === 'income' ? 'plus' : 'minus'}">
-                            ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
-                        </div>
-                        <div class="t-actions">
-                            <button onclick="deleteTransaction(${t.id})" title="Remover"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        if (list.length === 0) {
+            const p = document.createElement('p');
+            p.className = 'empty-state';
+            const t = translations[globalSettings.language] || translations["pt-BR"];
+            p.textContent = targetId === 'recent-transactions' ? t.emptyTrans : t.emptyTrans; // Using emptyTrans for both for simplicity
+            target.appendChild(p);
+        } else {
+            const template = document.getElementById('tpl-transaction');
+            list.slice().reverse().forEach(t => {
+                const clone = template.content.cloneNode(true);
+
+                // Icon & Color
+                const iconDiv = clone.querySelector('.t-icon');
+                iconDiv.classList.add(t.type);
+                iconDiv.querySelector('i').classList.add(t.type === 'income' ? 'fa-arrow-up' : 'fa-arrow-down');
+
+                // Text Content (Secure)
+                clone.querySelector('.t-desc-val').textContent = t.description;
+                clone.querySelector('.t-date-val').textContent = t.date;
+
+                // Badges
+                const catBadge = clone.querySelector('.t-cat-badge');
+                if (t.type === 'expense') {
+                    catBadge.textContent = t.category === 'fixed' ? 'Fixa' : 'Variável';
+                    catBadge.classList.add(t.category === 'fixed' ? 'badge-fixed' : 'badge-variable');
+                } else {
+                    catBadge.remove();
+                }
+
+                const instBadge = clone.querySelector('.t-inst-badge');
+                if (t.installments > 1) {
+                    clone.querySelector('.t-inst-val').textContent = `${t.current_installment}/${t.installments}`;
+                } else {
+                    instBadge.remove();
+                }
+
+                // Amount
+                const amountDiv = clone.querySelector('.t-amount');
+                amountDiv.classList.add(t.type === 'income' ? 'plus' : 'minus');
+                amountDiv.textContent = `${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}`;
+
+                // Actions
+                clone.querySelector('.delete-transaction-btn').setAttribute('data-id', t.id);
+
+                target.appendChild(clone);
+            });
         }
     };
 
@@ -284,85 +388,66 @@ function updateUI() {
 }
 
 // Backend Interactions
-async function addTransaction(type, description, amount, category, installments = 1) {
-    const totalAmount = parseFloat(amount);
-    const instCount = parseInt(installments) || 1;
-    const valuePerInst = totalAmount / instCount;
-
-    const tData = {
-        type,
-        category: type === 'expense' ? category : null,
-        description,
-        amount: instCount > 1 ? valuePerInst : totalAmount,
-        totalAmount: totalAmount,
-        installments: instCount,
-        currentInstallment: 1,
-        date: new Date().toLocaleDateString(globalSettings.language)
-    };
-
+async function addTransaction(type, description, amount, category, installments) {
     try {
-        const res = await fetch(`${API_URL}/api/transactions`, {
+        const date = new Date().toLocaleDateString('pt-BR');
+        const response = await fetch(`${API_URL}/api/transactions`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(tData)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, description, amount, category, installments, date })
         });
-        if (res.ok) await checkTokenAndLoad();
+        if (!response.ok) throw new Error("Erro ao salvar transação");
         closeModal();
+        await checkTokenAndLoad();
     } catch (err) {
-        alert("Erro ao salvar transação");
+        alert(err.message);
     }
 }
 
 async function deleteTransaction(id) {
-    if (!confirm("Remover esta transação?")) return;
+    if (!confirm("Remover permanentemente do Vault?")) return;
     try {
-        const res = await fetch(`${API_URL}/api/transactions/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
+        const response = await fetch(`${API_URL}/api/transactions/${id}`, {
+            method: 'DELETE'
         });
-        if (res.ok) await checkTokenAndLoad();
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || "Erro ao remover");
+        }
+        await checkTokenAndLoad();
     } catch (err) {
-        alert("Erro ao deletar");
+        alert(`ALERTA DE SEGURANÇA: ${err.message}`);
     }
 }
-
 async function addCaixinha(name, target) {
     try {
-        const res = await fetch(`${API_URL}/api/caixinhas`, {
+        const response = await fetch(`${API_URL}/api/caixinhas`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, target: parseFloat(target) })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, target })
         });
-        if (res.ok) await checkTokenAndLoad();
+        if (!response.ok) throw new Error("Erro ao criar caixinha");
         closeModal();
+        await checkTokenAndLoad();
     } catch (err) {
-        alert("Erro ao criar caixinha");
+        alert(err.message);
     }
 }
 
-async function depositCaixinha(id, val) {
-    const amount = parseFloat(val);
-    if (state.balance < amount) return alert("Saldo insuficiente");
-
+async function submitDeposit(id) {
+    const amount = document.getElementById('d-amount').value;
+    if (!amount) return;
     try {
-        const res = await fetch(`${API_URL}/api/caixinhas/${id}/deposit`, {
+        const response = await fetch(`${API_URL}/api/caixinhas/${id}/deposit`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ amount })
         });
-        if (res.ok) await checkTokenAndLoad();
+        if (!response.ok) throw new Error("Erro no depósito");
         closeModal();
+        await checkTokenAndLoad();
     } catch (err) {
-        alert("Erro no depósito");
+        alert(err.message);
     }
 }
 
@@ -415,8 +500,11 @@ function translateUI() {
         navLinks[4].innerHTML = `<i class="fas fa-cog"></i> ${t.settings}`;
     }
 
-    const logoutBtn = document.querySelector('.sidebar-footer .text-btn');
+    const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> ${t.logout}`;
+
+    const mobileLogout = document.getElementById('logout-btn-mobile');
+    if (mobileLogout) mobileLogout.innerHTML = `<i class="fas fa-sign-out-alt"></i> ${t.logout}`;
 
     // Dashboard Titles
     const h3s = document.querySelectorAll('.stat-info h3');
@@ -460,14 +548,15 @@ async function saveSettingsToServer() {
         const res = await fetch(`${API_URL}/api/settings`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(globalSettings)
         });
         if (res.ok) {
             status.textContent = "Configurações salvas e criptografadas na nuvem! ✨";
-            setTimeout(() => status.textContent = "", 3000);
+            setTimeout(() => { if (status) status.textContent = ""; }, 3000);
+        } else {
+            throw new Error("Falha no servidor");
         }
     } catch (err) {
         status.textContent = "Erro ao sincronizar.";
@@ -524,37 +613,39 @@ function renderCaixinhas() {
     const miniContainer = document.getElementById('caixinhas-mini-list');
     if (!fullContainer || !miniContainer) return;
 
-    const html = state.caixinhas.map(c => {
-        const percent = Math.min((c.current / c.target) * 100, 100).toFixed(0);
-        return `
-            <div class="caixinha-card">
-                <div class="card-header">
-                    <h3>${c.name}</h3>
-                    <i class="fas fa-piggy-bank"></i>
-                </div>
-                <p>${formatCurrency(c.current)} / ${formatCurrency(c.target)}</p>
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%"></div>
-                    </div>
-                    <span>${percent}% alcançado</span>
-                </div>
-                <button class="btn-primary" style="width:100%; margin-top:1rem" onclick="openDepositModal(${c.id})">Investir</button>
-            </div>
-        `;
-    }).join('');
+    fullContainer.innerHTML = '';
+    miniContainer.innerHTML = '';
 
-    fullContainer.innerHTML = html || `<p class="empty-state">Sem reservas no momento.</p>`;
+    if (state.caixinhas.length === 0) {
+        fullContainer.innerHTML = `<p class="empty-state">Sem reservas no momento.</p>`;
+        miniContainer.innerHTML = `<p class="empty-state">Nenhuma caixinha.</p>`;
+        return;
+    }
 
-    miniContainer.innerHTML = state.caixinhas.slice(0, 2).map(c => {
+    const template = document.getElementById('tpl-caixinha');
+    const miniTemplate = document.getElementById('tpl-caixinha-mini');
+
+    state.caixinhas.forEach(c => {
         const percent = Math.min((c.current / c.target) * 100, 100).toFixed(0);
-        return `
-            <div style="margin-bottom:1rem">
-                <small>${c.name}</small>
-                <div class="progress-bar" style="height:6px"><div class="progress-fill" style="width: ${percent}%"></div></div>
-            </div>
-        `;
-    }).join('') || `<p class="empty-state">Nenhuma caixinha.</p>`;
+
+        // Render Full
+        const clone = template.content.cloneNode(true);
+        clone.querySelector('.c-name-val').textContent = c.name;
+        clone.querySelector('.c-curr-val').textContent = formatCurrency(c.current);
+        clone.querySelector('.c-target-val').textContent = formatCurrency(c.target);
+        clone.querySelector('.c-percent-val').textContent = percent;
+        clone.querySelector('.progress-fill').style.width = `${percent}%`;
+        clone.querySelector('.invest-btn').setAttribute('data-id', c.id);
+        fullContainer.appendChild(clone);
+
+        // Render Mini (max 2)
+        if (miniContainer.children.length < 2) {
+            const miniClone = miniTemplate.content.cloneNode(true);
+            miniClone.querySelector('.c-name-mini').textContent = c.name;
+            miniClone.querySelector('.progress-fill').style.width = `${percent}%`;
+            miniContainer.appendChild(miniClone);
+        }
+    });
 }
 
 // Navigation
@@ -565,7 +656,7 @@ function showSection(sectionId) {
 
     document.querySelectorAll('nav a').forEach(a => {
         a.classList.remove('active');
-        if (a.getAttribute('onclick') && a.getAttribute('onclick').includes(sectionId)) a.classList.add('active');
+        if (a.getAttribute('data-section') === sectionId) a.classList.add('active');
     });
 }
 
@@ -578,12 +669,12 @@ function openModal(type) {
         inner = `
             <div class="modal-header"><h2>Novo Registro</h2></div>
             <div class="form-group"><label>Tipo</label>
-                <select id="t-type" onchange="toggleCategoryField()">
+                <select id="t-type">
                     <option value="income">💰 Ganhos</option><option value="expense">💸 Despesa</option>
                 </select>
             </div>
             <div id="category-group" class="form-group hidden"><label>Categoria</label>
-                <select id="t-category" onchange="toggleInstallmentsField()">
+                <select id="t-category">
                     <option value="variable">🛒 Variável</option><option value="fixed">🏠 Fixa</option>
                 </select>
             </div>
@@ -593,8 +684,8 @@ function openModal(type) {
             <div class="form-group"><label>Descrição</label><input type="text" id="t-desc"></div>
             <div class="form-group"><label>Valor Total</label><input type="number" id="t-amount" step="0.01"></div>
             <div style="display:flex; gap:1rem; margin-top:1rem">
-                <button class="btn-primary" style="flex:1" onclick="submitTransaction()">Salvar</button>
-                <button class="text-btn" onclick="closeModal()">Cancelar</button>
+                <button id="submit-t-btn" class="btn-primary" style="flex:1">Salvar</button>
+                <button id="cancel-modal-btn" class="text-btn">Cancelar</button>
             </div>
         `;
     } else if (type === 'add-caixinha') {
@@ -603,8 +694,8 @@ function openModal(type) {
             <div class="form-group"><label>Nome</label><input type="text" id="c-name"></div>
             <div class="form-group"><label>Meta</label><input type="number" id="c-target"></div>
             <div style="display:flex; gap:1rem">
-                <button class="btn-primary" onclick="submitCaixinha()">Criar</button>
-                <button class="text-btn" onclick="closeModal()">Cancelar</button>
+                <button id="submit-c-btn" class="btn-primary">Criar</button>
+                <button id="cancel-modal-btn" class="text-btn">Cancelar</button>
             </div>
         `;
     }
@@ -620,8 +711,8 @@ function openDepositModal(id) {
         <h2>Investir: ${c.name}</h2>
         <div class="form-group"><label>Valor</label><input type="number" id="d-amount" step="0.01"></div>
         <div style="display:flex; gap:1rem">
-            <button class="btn-primary" onclick="submitDeposit(${id})">Depositar</button>
-            <button class="text-btn" onclick="closeModal()">Cancelar</button>
+            <button id="submit-d-btn" class="btn-primary" data-id="${id}">Depositar</button>
+            <button id="cancel-modal-btn" class="text-btn">Cancelar</button>
         </div>
     `;
     document.getElementById('modal-container').classList.remove('hidden');

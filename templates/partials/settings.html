@@ -14,13 +14,13 @@
                 <div class="form-group">
                     <label>Cor Principal</label>
                     <div class="color-picker-wrapper">
-                        <input type="color" id="set-color" value="#6366f1" onchange="applySettings()">
+                        <input type="color" id="set-color" value="#6366f1">
                         <span>Destaque Visual</span>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Tamanho da Fonte</label>
-                    <select id="set-font" onchange="applySettings()">
+                    <select id="set-font">
                         <option value="14px">Pequeno</option>
                         <option value="16px" selected>Médio</option>
                         <option value="18px">Grande</option>
@@ -29,7 +29,7 @@
                 </div>
                 <div class="form-group">
                     <label>Estilo da Fonte</label>
-                    <select id="set-font-family" onchange="applySettings()">
+                    <select id="set-font-family">
                         <option value="'Outfit', sans-serif">Moderno (Outfit)</option>
                         <option value="'Roboto', sans-serif">Limpo (Roboto)</option>
                         <option value="'Montserrat', sans-serif">Geométrico (Montserrat)</option>
@@ -38,7 +38,7 @@
                 </div>
                 <div class="form-group">
                     <label>Posição da Barra Lateral (LDR/RDL)</label>
-                    <select id="set-nav-pos" onchange="applySettings()">
+                    <select id="set-nav-pos">
                         <option value="row">Esquerda (LDR)</option>
                         <option value="row-reverse">Direita (RDL)</option>
                     </select>
@@ -52,7 +52,7 @@
                 </div>
                 <div class="form-group">
                     <label>Idioma do Sistema</label>
-                    <select id="set-lang" onchange="applySettings()">
+                    <select id="set-lang">
                         <option value="pt-BR">Português (Brasil)</option>
                         <option value="en-US">English (USA)</option>
                         <option value="es-ES">Español (España)</option>
@@ -60,7 +60,7 @@
                 </div>
                 <div class="form-group">
                     <label>Moeda de Exibição</label>
-                    <select id="set-currency" onchange="applySettings()">
+                    <select id="set-currency">
                         <option value="BRL">Real (R$)</option>
                         <option value="USD">Dólar ($)</option>
                         <option value="EUR">Euro (€)</option>
@@ -72,7 +72,7 @@
         </div>
 
         <div class="settings-actions">
-            <button class="btn-primary btn-large" onclick="saveSettingsToServer()">
+            <button id="save-settings-btn" class="btn-primary btn-large">
                 <i class="fas fa-cloud-upload-alt"></i> Sincronizar com o Vault
             </button>
             <p id="settings-status"></p>

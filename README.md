@@ -1,25 +1,31 @@
-# 🚀 Antigravity Finance - Secure Vault
+# Financeiro - Secure Vault
 
 Um sistema de gestão financeira pessoal de **alta segurança** e **extrema personalização**, projetado para quem busca controle total sobre seu dinheiro com privacidade absoluta.
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
-![Security](https://img.shields.io/badge/security-Argon2id%20%2B%20AES--128-red)
+![Security](https://img.shields.io/badge/security-Argon2id%20%2B%20AES--256--GCM%20%2B%20Integrity-red)
 ![Frontend](https://img.shields.io/badge/frontend-Vanilla%20JS%20%2B%20CSS-green)
 ![Backend](https://img.shields.io/badge/backend-FastAPI%20%2B%20SQLite-lightgrey)
 
 ---
 
-## 🔐 Segurança Nível "Vault" (Absurdo)
+## 🔐 Segurança Nível "Absolute Zero" (Fortaleza de Infraestrutura)
 
-Este sistema foi construído sob o princípio de **Defesa em Profundidade**. Diferente de apps comuns, aqui seus dados não estão apenas salvos; eles estão fortificados.
+Este sistema foi refatorado para eliminar falhas lógicas e gargalos de performance, atingindo um padrão de arquitetura de segurança de elite:
 
--   **Hashing de Senha Argon2id**: Vencedor do Password Hashing Competition, resistente a ataques de GPU e Side-channel.
--   **Criptografia de Dados em Repouso (AES-128 GCM)**: Campos sensíveis (descrições, valores, nomes de caixinhas e configurações) são encriptados usando Fernet antes de tocarem o banco de dados.
--   **Chave de Mestra Independente**: Uma `vault.key` é gerada fisicamente no servidor. Sem ela, o banco de dados é um amontoado de bytes inúteis.
+-   **Argon2id (ASIC-Resistant)**: Configurado com `time_cost=4`, `memory_cost=100MB` e `parallelism=8`. Parâmetros que superam os padrões da OWASP para máxima resistência contra ataques de dicionário e hardware especializado.
+-   **Integridade via Tag GCM (Galois/Counter Mode)**: Abandonamos o hash de arquivo externo (que causava gargalos de I/O) em favor da verificação em tempo real via hardware. Cada campo criptografado possui sua própria tag de autenticação AES-256. Se **um único bit** for alterado no banco de dados, a CPU detecta instantaneamente e bloqueia a leitura.
+-   **Master Secret Híbrido (RAM & Disk)**: O sistema utiliza o segredo mestre para derivar as chaves de encriptação. Você pode configurar via variável de ambiente `VAULT_MASTER_SECRET` no seu arquivo `.env` ou utilizar o arquivo físico `vault.key`. O sistema prioriza o ambiente, mas garante a existência do arquivo para facilitar backups físicos.
+-   **Derivação de Chave via HKDF v3**: Utilizamos o padrão HKDF (HMAC-based Key Derivation) para expandir o segredo mestre em uma chave de criptografia de 256 bits robusta.
+-   **Middleware de Proteção de Camada 7**:
+    *   **Content-Security-Policy (CSP)**: Bloqueia injeções de scripts externos maliciosos.
+    *   **X-Frame-Options (DENY)**: Previne ataques de Clickjacking.
+    *   **X-Content-Type-Options (nosniff)**: Impede que o navegador tente "adivinhar" tipos de arquivos, mitigando ataques de Sniffing.
+-   **Autenticação JWT & Rate Limiting**: Sessões efêmeras e proteção contra brute-force integrada.
 -   **Autenticação JWT**: Sessões seguras e stateless.
 -   **Rate Limiting**: Proteção contra ataques de força bruta integrada (SlowAPI).
 
-## ✨ Funcionalidades Principais
+## Funcionalidades Principais
 
 -   **Dashboard Dinâmico**: Visualização de saldo, ganhos e despesas em tempo real.
 -   **Personalização UI/UX Total**:
@@ -33,7 +39,7 @@ Este sistema foi construído sob o princípio de **Defesa em Profundidade**. Dif
 -   **Sistema de Caixinhas**: Crie metas de reserva com barra de progresso e investimentos diretos.
 -   **Configurações em Nuvem**: Suas preferências estéticas são salvas criptografadas no servidor.
 
-## 🛠️ Stack Tecnológica
+## Stack Tecnológica
 
 ### Backend
 -   **FastAPI**: Framework de alta performance.
@@ -50,7 +56,7 @@ Este sistema foi construído sob o princípio de **Defesa em Profundidade**. Dif
 
 ---
 
-## ⚙️ Instalação e Configuração
+## Instalação e Configuração
 
 ### 1. Pré-requisitos
 -   Python 3.8+
@@ -83,7 +89,7 @@ python main.py
 
 ---
 
-## 📄 Licença
+## Licença
 Este projeto é de uso público e focado em segurança máxima. 
 
 **Financeiro- Controle absoluto, segurança absurda.**

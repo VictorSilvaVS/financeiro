@@ -7,11 +7,15 @@ if os.path.exists(db_path):
     cursor = conn.cursor()
     try:
         cursor.execute("ALTER TABLE users ADD COLUMN enc_settings BLOB")
-        conn.commit()
-        print("Coluna enc_settings adicionada com sucesso!")
-    except sqlite3.OperationalError as e:
-        print(f"Nota: {e}")
-    finally:
-        conn.close()
+    except: pass
+    try:
+        cursor.execute("ALTER TABLE transactions ADD COLUMN integrity_token TEXT")
+    except: pass
+    try:
+        cursor.execute("ALTER TABLE caixinhas ADD COLUMN integrity_token TEXT")
+    except: pass
+    conn.commit()
+    conn.close()
+    print("Esquema do Vault atualizado para Cryptografia Atômica (v4).")
 else:
     print("Banco de dados não encontrado, será criado ao iniciar o app.")
