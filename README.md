@@ -1,4 +1,4 @@
-# Financeiro - Secure Vault
+# 🚀 Antigravity Finance - Secure Vault
 
 Um sistema de gestão financeira pessoal de **alta segurança** e **extrema personalização**, projetado para quem busca controle total sobre seu dinheiro com privacidade absoluta.
 
