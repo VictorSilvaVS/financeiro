@@ -2,88 +2,86 @@
 
 Um sistema de gestão financeira pessoal de **alta segurança** e **extrema personalização**, projetado para quem busca controle total sobre seu dinheiro com privacidade absoluta.
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue)
-![Security](https://img.shields.io/badge/security-Argon2id%20%2B%20AES--128-red)
+![Version](https://img.shields.io/badge/version-4.0.0-blue)
+![Security](https://img.shields.io/badge/security-Atomic%20Cryptography%20%2B%20AES--256--GCM%20%2B%20HMAC-red)
 ![Frontend](https://img.shields.io/badge/frontend-Vanilla%20JS%20%2B%20CSS-green)
 ![Backend](https://img.shields.io/badge/backend-FastAPI%20%2B%20SQLite-lightgrey)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 ---
 
-## 🔐 Segurança Nível "Vault" (Absurdo)
+## 🔐 Segurança Nível "Atomic Fortress" (Arquitetura Inviolável)
 
-Este sistema foi construído sob o princípio de **Defesa em Profundidade**. Diferente de apps comuns, aqui seus dados não estão apenas salvos; eles estão fortificados.
+Este sistema foi refatorado para o padrão de segurança atômica, onde cada registro é uma unidade independente e verificável:
 
--   **Hashing de Senha Argon2id**: Vencedor do Password Hashing Competition, resistente a ataques de GPU e Side-channel.
--   **Criptografia de Dados em Repouso (AES-128 GCM)**: Campos sensíveis (descrições, valores, nomes de caixinhas e configurações) são encriptados usando Fernet antes de tocarem o banco de dados.
--   **Chave de Mestra Independente**: Uma `vault.key` é gerada fisicamente no servidor. Sem ela, o banco de dados é um amontoado de bytes inúteis.
--   **Autenticação JWT**: Sessões seguras e stateless.
--   **Rate Limiting**: Proteção contra ataques de força bruta integrada (SlowAPI).
+-   **Criptografia Atômica (HMAC-SHA256)**: Cada transação e caixinha possui um token de integridade único. Se **um único bit** for alterado manualmente no banco de dados, o Vault detecta a violação e tranca o acesso instantaneamente.
+-   **Vínculo Físico de Estado (AAD)**: Utilizamos *Additional Authenticated Data* para prender a criptografia aos metadados do usuário (username e hash de senha). Isso significa que os dados não podem ser movidos para outro usuário ou descriptografados se a senha for alterada externamente no DB.
+-   **Argon2id (ASIC-Resistant)**: Hashing de senha com proteção contra hardware especializado (GPUs/ASICs).
+-   **Master Secret Híbrido (RAM & Disk)**: O sistema utiliza um segredo mestre derivado para gerar chaves de 256 bits. Pode ser injetado via `VAULT_MASTER_SECRET` (RAM) ou lido do arquivo `vault.key`.
+-   **Zero-Knowledge & HKDF v3**: O servidor nunca conhece sua chave de cifragem final; ela é derivada em tempo real usando HKDF (HMAC-based Key Derivation).
+-   **Proteção de Camada 7 (Hardened Headers)**:
+    *   **CSP (Content-Security-Policy)**: Bloqueia XSS.
+    *   **X-Frame-Options**: Impede Clickjacking.
+    *   **HSTS**: Força comunicações seguras.
 
-## ✨ Funcionalidades Principais
+## Funcionalidades Principais
 
 -   **Dashboard Dinâmico**: Visualização de saldo, ganhos e despesas em tempo real.
 -   **Personalização UI/UX Total**:
     *   **Temas**: Escolha sua cor de destaque (Primary Color).
-    *   **Tipografia**: Seleção entre 4 estilos de fonte (Outfit, Roboto, Montserrat, Playfair).
-    *   **Layout Flexível (LDR/RDL)**: Mude a barra lateral de lado com um clique.
+    *   **Tipografia**: Seleção entre fontes premium (Outfit, Roboto, Montserrat, Playfair).
+    *   **Layout Adaptativo**: Barra lateral alternável (Esquerda/Direita).
 -   **Globalização (i18n)**:
-    *   **Multi-idioma**: Português, Inglês e Espanhol (incluindo dicas e citações).
-    *   **Multi-moeda**: Suporte a Real (BRL), Dólar (USD), Euro (EUR), Libra (GBP) e Iene (JPY).
-    *   **Formatação Cultural**: Formatos de milhar e decimal ajustados automaticamente por moeda (Ex: `,` vs `.` conforme o país).
--   **Sistema de Caixinhas**: Crie metas de reserva com barra de progresso e investimentos diretos.
--   **Configurações em Nuvem**: Suas preferências estéticas são salvas criptografadas no servidor.
+    *   **Multi-idioma**: Português, Inglês e Espanhol.
+    *   **Multi-moeda**: BRL, USD, EUR, GBP, JPY com formatação cultural automática.
+-   **Sistema de Caixinhas**: Gestão de metas com barras de progresso e depósitos atômicos.
+-   **Configurações em Nuvem**: Suas preferências visuais são salvas de forma criptografada.
 
-## 🛠️ Stack Tecnológica
+## Stack Tecnológica
 
 ### Backend
--   **FastAPI**: Framework de alta performance.
--   **SQLAlchemy**: ORM para gestão de dados.
--   **Cryptography (Fernet)**: Para encriptação simétrica.
--   **Argon2-cffi**: Para hashing seguro.
--   **SlowAPI**: Para proteção de endpoints.
+-   **FastAPI**: Performance extrema e tipagem robusta.
+-   **SQLAlchemy**: Gestão de dados via ORM.
+-   **Cryptography (AES-GCM)**: Padrão ouro de encriptação autenticada.
+-   **SlowAPI**: Proteção contra força bruta (Rate Limiting).
 
 ### Frontend
--   **Vanilla JS**: Lógica limpa e rápida sem frameworks pesados.
--   **Vanilla CSS**: Design moderno com Glassmorphism e animações 60fps.
--   **Google Fonts**: Tipografia premium integrada.
--   **Font Awesome**: Iconografia profissional.
+-   **Vanilla JS & CSS**: Performance de 60fps sem dependências pesadas.
+-   **Glassmorphism Design**: Interface moderna e premium.
 
 ---
 
-## ⚙️ Instalação e Configuração
+## Instalação e Configuração
 
-### 1. Pré-requisitos
--   Python 3.8+
--   Pip (gestor de pacotes)
-
-### 2. Configuração do Ambiente
-Crie um arquivo `.env` na raiz do projeto conforme o modelo abaixo:
+### 1. Configuração do Ambiente
+Crie um arquivo `.env` na raiz do projeto:
 
 ```env
-SECRET_KEY=sua_chave_secreta_jwt
+SECRET_KEY=sua_chave_jwt_secreta
 ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+ACCESS_TOKEN_EXPIRE_MINUTES=60
 DATABASE_URL=sqlite:///./secure_vault.db
-VAULT_KEY_PATH=vault.key
+VAULT_MASTER_SECRET=seu_segredo_mestre_hex_64_chars
 STATIC_DIR=static
 TEMPLATES_DIR=templates
 HOST=0.0.0.0
 PORT=8000
 ```
 
-### 3. Rodar o Sistema
-Na primeira execução, o sistema gerará a `vault.key` e o banco de dados automaticamente.
-
+### 2. Rodar o Sistema
 ```bash
+# Sincroniza o banco de dados com a nova segurança atômica
+python migrate.py
+
+# Inicia o Vault
 python main.py
 ```
 
-### 4. Backup (Importante!)
-**Mantenha seu arquivo `vault.key` seguro.** Se você perdê-lo, não será possível descriptografar os dados do banco de dados, mesmo tendo a senha do usuário.
+### 3. Backup (Crítico!)
+**Guarde seu `vault.key`.** Sem ele ou o segredo no `.env`, seus dados tornam-se lixo digital indecifrável.
 
 ---
 
-## 📄 Licença
-Este projeto é de uso público e focado em segurança máxima. 
+## Licença
+Este sistema é focado em privacidade absoluta e controle total do usuário.
 
-**Financeiro- Controle absoluto, segurança absurda.**
+**Financeiro - Segurança Atômica, Privacidade Absoluta.**
